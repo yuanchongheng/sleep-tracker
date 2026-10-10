@@ -5,18 +5,16 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#f6f7fb">
   <title>睡眠规律记录</title>
-  <link rel="stylesheet" href="./styles.css?v=20261010-2205">
-  <link rel="stylesheet" href="./analytics.css?v=20261010-2205">
-  <link rel="stylesheet" href="./comparison.css?v=20261010-2205">
-  <link rel="stylesheet" href="./history-pagination.css?v=20261010-2205">
+  <link rel="stylesheet" href="./styles.css?v=20261010-2215">
+  <link rel="stylesheet" href="./analytics.css?v=20261010-2215">
+  <link rel="stylesheet" href="./comparison.css?v=20261010-2215">
+  <link rel="stylesheet" href="./history-pagination.css?v=20261010-2215">
+  <link rel="stylesheet" href="./improvement.css?v=20261010-2215">
 </head>
 <body>
   <div class="page">
     <header class="header">
-      <div class="title-wrap">
-        <h1>睡眠规律记录</h1>
-        <p>记录睡眠，观察作息稳定性。数据只保存在当前浏览器。</p>
-      </div>
+      <div class="title-wrap"><h1>睡眠规律记录</h1><p>记录睡眠，观察作息稳定性。数据只保存在当前浏览器。</p></div>
       <div class="badge">最近 14 天规律性</div>
     </header>
 
@@ -25,18 +23,11 @@
         <h2 id="formTitle">登记一次睡眠</h2>
         <form id="sleepForm">
           <div class="field"><label for="date">本次睡眠归属日（起床日）</label><input id="date" type="date" required></div>
-          <div class="two-col">
-            <div class="field"><label for="bed">入睡时间</label><input id="bed" type="time" value="00:00" required></div>
-            <div class="field"><label for="wake">起床时间</label><input id="wake" type="time" value="08:00" required></div>
-          </div>
+          <div class="two-col"><div class="field"><label for="bed">入睡时间</label><input id="bed" type="time" value="00:00" required></div><div class="field"><label for="wake">起床时间</label><input id="wake" type="time" value="08:00" required></div></div>
           <div class="duration-box" id="durationPreview">预计睡眠：8小时00分</div>
           <div class="field"><label for="note">备注（可选）</label><textarea id="note" placeholder="例如：睡前刷手机、喝咖啡、午睡较久、夜里醒过……"></textarea></div>
           <button class="primary" type="submit" id="saveBtn">保存记录</button>
-          <div class="btn-row">
-            <button class="ghost" type="button" id="cancelEdit" style="display:none">取消编辑</button>
-            <button class="ghost" type="button" id="importBtn">导入 CSV</button>
-            <button class="ghost" type="button" id="exportBtn">导出 CSV</button>
-          </div>
+          <div class="btn-row"><button class="ghost" type="button" id="cancelEdit" style="display:none">取消编辑</button><button class="ghost" type="button" id="importBtn">导入 CSV</button><button class="ghost" type="button" id="exportBtn">导出 CSV</button></div>
           <input id="importFile" type="file" accept=".csv,text/csv" hidden>
           <div class="help">归档规则：每次睡眠按“起床日”归档，后台同时保存真实入睡日期时间和起床日期时间。<br>例如：10 月 26 日 23:45 入睡、10 月 27 日 07:40 起床，这条记录归到 10 月 27 日。<br>CSV 导入兼容旧版和新版格式；同一天的数据会以导入内容覆盖。规律性评分和下方分析指标仅用于自我观察，不是医学诊断。</div>
         </form>
@@ -61,6 +52,14 @@
           <div class="compare-reasons" id="compareReasons">记录更多睡眠后，这里会自动判断最新一晚相较近期基线是更好、基本持平还是更差。</div>
         </section>
 
+        <section class="card improvement" id="improvementSection">
+          <div class="improvement-head">
+            <div><h3>近期改善 · 最近 7 条 vs 历史</h3><p id="improvementSubtitle">比较最近一周和更早记录，判断你的作息是否正在改善。</p></div>
+            <div class="improvement-verdict" id="improvementVerdict">数据不足</div>
+          </div>
+          <div id="improvementBody"><div class="improvement-summary">记录更多数据后，这里会自动生成近期与历史的对比。</div></div>
+        </section>
+
         <section class="charts">
           <div class="card chart-card"><div class="chart-head"><h3>作息时间趋势</h3><div class="legend"><span><i class="dot dot-bed"></i>入睡</span><span><i class="dot dot-wake"></i>起床</span></div></div><div class="canvas-box"><canvas id="timeChart"></canvas></div><div class="summary-strip"><div class="summary-item"><div class="s-label">平均入睡</div><div class="s-value" id="avgBed">—</div></div><div class="summary-item"><div class="s-label">平均起床</div><div class="s-value" id="avgWake">—</div></div><div class="summary-item"><div class="s-label">最短睡眠</div><div class="s-value" id="minSleep">—</div></div><div class="summary-item"><div class="s-label">最长睡眠</div><div class="s-value" id="maxSleep">—</div></div></div></div>
           <div class="card chart-card"><div class="chart-head"><h3>睡眠时长</h3><div class="legend"><span><i class="dot dot-target"></i>8h 参考线</span></div></div><div class="canvas-box"><canvas id="durationChart"></canvas></div></div>
@@ -78,23 +77,18 @@
             <div class="analysis-metric"><div class="m-label">周末－工作日时长差 <span class="metric-help" title="周六、周日与周一至周五的平均睡眠时长差。">?</span></div><div class="m-value" id="weekendDurationDiff">—</div><div class="m-note" id="weekendDurationNote">需要两类日期都有记录</div></div>
             <div class="analysis-metric"><div class="m-label">社会时差（简化） <span class="metric-help" title="这里用周末与工作日平均睡眠中点的绝对差值作简化估算。研究中还有更严格的校正算法。">?</span></div><div class="m-value" id="socialJetlag">—</div><div class="m-note" id="socialJetlagNote">需要工作日和周末记录</div></div>
           </div>
-          <div class="analysis-bottom">
-            <div class="analysis-panel"><h4>睡眠中点趋势</h4><div class="midpoint-box"><canvas id="midpointChart"></canvas></div></div>
-            <div class="analysis-panel"><h4>工作日 vs 周末</h4><div class="compare-table"><div class="compare-col"><h5>工作日</h5><div class="compare-row"><span>平均入睡</span><b id="weekdayBed">—</b></div><div class="compare-row"><span>平均起床</span><b id="weekdayWake">—</b></div><div class="compare-row"><span>睡眠中点</span><b id="weekdayMid">—</b></div><div class="compare-row"><span>平均时长</span><b id="weekdayDuration">—</b></div></div><div class="compare-col"><h5>周末</h5><div class="compare-row"><span>平均入睡</span><b id="weekendBed">—</b></div><div class="compare-row"><span>平均起床</span><b id="weekendWake">—</b></div><div class="compare-row"><span>睡眠中点</span><b id="weekendMid">—</b></div><div class="compare-row"><span>平均时长</span><b id="weekendDuration">—</b></div></div></div><div class="analysis-note">“社会时差”这里采用工作日与周末睡眠中点差的简化算法，仅适合自我观察。若工作日/周末记录数量很少，结果会比较不稳定。</div></div>
-          </div>
+          <div class="analysis-bottom"><div class="analysis-panel"><h4>睡眠中点趋势</h4><div class="midpoint-box"><canvas id="midpointChart"></canvas></div></div><div class="analysis-panel"><h4>工作日 vs 周末</h4><div class="compare-table"><div class="compare-col"><h5>工作日</h5><div class="compare-row"><span>平均入睡</span><b id="weekdayBed">—</b></div><div class="compare-row"><span>平均起床</span><b id="weekdayWake">—</b></div><div class="compare-row"><span>睡眠中点</span><b id="weekdayMid">—</b></div><div class="compare-row"><span>平均时长</span><b id="weekdayDuration">—</b></div></div><div class="compare-col"><h5>周末</h5><div class="compare-row"><span>平均入睡</span><b id="weekendBed">—</b></div><div class="compare-row"><span>平均起床</span><b id="weekendWake">—</b></div><div class="compare-row"><span>睡眠中点</span><b id="weekendMid">—</b></div><div class="compare-row"><span>平均时长</span><b id="weekendDuration">—</b></div></div></div><div class="analysis-note">“社会时差”这里采用工作日与周末睡眠中点差的简化算法，仅适合自我观察。若工作日/周末记录数量很少，结果会比较不稳定。</div></div></div>
         </section>
 
-        <section class="card history">
-          <div class="history-head"><h3>睡眠记录</h3><button class="danger" id="clearBtn" type="button">清空全部</button></div>
-          <div id="historyBody"></div>
-        </section>
+        <section class="card history"><div class="history-head"><h3>睡眠记录</h3><button class="danger" id="clearBtn" type="button">清空全部</button></div><div id="historyBody"></div></section>
       </main>
     </div>
   </div>
 
   <div class="toast" id="toast"></div>
-  <script src="./app.js?v=20261010-2205"></script>
-  <script src="./comparison.js?v=20261010-2205"></script>
-  <script src="./history-pagination.js?v=20261010-2205"></script>
+  <script src="./app.js?v=20261010-2215"></script>
+  <script src="./comparison.js?v=20261010-2215"></script>
+  <script src="./improvement.js?v=20261010-2215"></script>
+  <script src="./history-pagination.js?v=20261010-2215"></script>
 </body>
 </html>
