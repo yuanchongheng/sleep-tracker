@@ -1,1 +1,144 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0; url=./offline_full_version.html"><title>睡眠规律记录</title><script>location.replace('./offline_full_version.html');</script></head><body><p>正在打开完整版睡眠记录网页……</p><p><a href="./offline_full_version.html">如果没有自动跳转，请点这里</a></p></body></html>
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f6f7fb">
+  <title>睡眠规律记录</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="title-wrap">
+        <h1>睡眠规律记录</h1>
+        <p>记录睡眠，观察作息稳定性。数据只保存在当前浏览器。</p>
+      </div>
+      <div class="badge">最近 14 天规律性</div>
+    </header>
+
+    <div class="layout">
+      <aside class="card sidebar">
+        <h2 id="formTitle">登记一次睡眠</h2>
+        <form id="sleepForm">
+          <div class="field">
+            <label for="date">本次睡眠归属日（起床日）</label>
+            <input id="date" type="date" required>
+          </div>
+
+          <div class="two-col">
+            <div class="field">
+              <label for="bed">入睡时间</label>
+              <input id="bed" type="time" value="00:00" required>
+            </div>
+            <div class="field">
+              <label for="wake">起床时间</label>
+              <input id="wake" type="time" value="08:00" required>
+            </div>
+          </div>
+
+          <div class="duration-box" id="durationPreview">预计睡眠：8小时00分</div>
+
+          <div class="field">
+            <label for="note">备注（可选）</label>
+            <textarea id="note" placeholder="例如：睡前刷手机、喝咖啡、午睡较久、夜里醒过……"></textarea>
+          </div>
+
+          <button class="primary" type="submit" id="saveBtn">保存记录</button>
+          <div class="btn-row">
+            <button class="ghost" type="button" id="cancelEdit" style="display:none">取消编辑</button>
+            <button class="ghost" type="button" id="importBtn">导入 CSV</button>
+            <button class="ghost" type="button" id="exportBtn">导出 CSV</button>
+          </div>
+          <input id="importFile" type="file" accept=".csv,text/csv" hidden>
+
+          <div class="help">
+            归档规则：每次睡眠按“起床日”归档，后台同时保存真实入睡日期时间和起床日期时间。<br>
+            例如：10 月 26 日 23:45 入睡、10 月 27 日 07:40 起床，这条记录归到 10 月 27 日。<br>
+            CSV 导入兼容旧版和新版格式；同一天的数据会以导入内容覆盖。规律性评分仅用于自我观察，不是医学诊断。
+          </div>
+        </form>
+      </aside>
+
+      <main class="content">
+        <section class="stats">
+          <div class="card stat">
+            <div class="label">近 7 天平均睡眠</div>
+            <div class="value" id="avgDuration">—</div>
+            <div class="sub" id="avgDurationSub">暂无数据</div>
+          </div>
+          <div class="card stat">
+            <div class="label">入睡时间波动</div>
+            <div class="value" id="bedSd">—</div>
+            <div class="sub">近 14 天标准差</div>
+          </div>
+          <div class="card stat">
+            <div class="label">起床时间波动</div>
+            <div class="value" id="wakeSd">—</div>
+            <div class="sub">近 14 天标准差</div>
+          </div>
+          <div class="card stat">
+            <div class="label">规律性评分</div>
+            <div class="value" id="regularity">—</div>
+            <div class="sub" id="regularityText">需要至少 3 条记录</div>
+          </div>
+        </section>
+
+        <section class="charts">
+          <div class="card chart-card">
+            <div class="chart-head">
+              <h3>作息时间趋势</h3>
+              <div class="legend">
+                <span><i class="dot dot-bed"></i>入睡</span>
+                <span><i class="dot dot-wake"></i>起床</span>
+              </div>
+            </div>
+            <div class="canvas-box"><canvas id="timeChart"></canvas></div>
+            <div class="summary-strip">
+              <div class="summary-item"><div class="s-label">平均入睡</div><div class="s-value" id="avgBed">—</div></div>
+              <div class="summary-item"><div class="s-label">平均起床</div><div class="s-value" id="avgWake">—</div></div>
+              <div class="summary-item"><div class="s-label">最短睡眠</div><div class="s-value" id="minSleep">—</div></div>
+              <div class="summary-item"><div class="s-label">最长睡眠</div><div class="s-value" id="maxSleep">—</div></div>
+            </div>
+          </div>
+
+          <div class="card chart-card">
+            <div class="chart-head">
+              <h3>睡眠时长</h3>
+              <div class="legend">
+                <span><i class="dot dot-target"></i>8h 参考线</span>
+              </div>
+            </div>
+            <div class="canvas-box"><canvas id="durationChart"></canvas></div>
+          </div>
+        </section>
+
+        <section class="card chart-card">
+          <div class="chart-head">
+            <h3>规律性趋势 · 7 日滚动评分</h3>
+            <div class="chart-meta">越接近 100 越稳定</div>
+          </div>
+          <div class="canvas-box"><canvas id="scoreChart"></canvas></div>
+          <div class="score-guide">
+            <div><b>85–100</b>作息非常稳定</div>
+            <div><b>70–84</b>整体较稳定</div>
+            <div><b>50–69</b>波动比较明显</div>
+            <div><b>0–49</b>作息很不规律</div>
+          </div>
+        </section>
+
+        <section class="card history">
+          <div class="history-head">
+            <h3>睡眠记录</h3>
+            <button class="danger" id="clearBtn" type="button">清空全部</button>
+          </div>
+          <div id="historyBody"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script src="./app.js"></script>
+</body>
+</html>
