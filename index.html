@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#f6f7fb">
   <title>睡眠规律记录</title>
-  <link rel="stylesheet" href="./styles.css">
-  <link rel="stylesheet" href="./analytics.css">
+  <link rel="stylesheet" href="./styles.css?v=20261010-2155">
+  <link rel="stylesheet" href="./analytics.css?v=20261010-2155">
+  <link rel="stylesheet" href="./comparison.css?v=20261010-2155">
 </head>
 <body>
   <div class="page">
@@ -83,6 +84,23 @@
             <div class="value" id="regularity">—</div>
             <div class="sub" id="regularityText">需要至少 3 条记录</div>
           </div>
+        </section>
+
+        <section class="card daily-compare" id="dailyCompare">
+          <div class="daily-compare-head">
+            <div>
+              <h4 id="compareTitle">最新睡眠相比之前</h4>
+              <p id="compareSubtitle">至少需要 2 条记录才能比较。</p>
+            </div>
+            <div class="compare-verdict" id="compareVerdict">数据不足</div>
+          </div>
+          <div class="daily-compare-grid">
+            <div class="compare-kpi"><div class="ck-label">最新睡眠时长</div><div class="ck-value" id="compareDuration">—</div><div class="ck-note" id="compareDurationNote">—</div></div>
+            <div class="compare-kpi"><div class="ck-label">最新入睡</div><div class="ck-value" id="compareBed">—</div><div class="ck-note" id="compareBedNote">—</div></div>
+            <div class="compare-kpi"><div class="ck-label">最新起床</div><div class="ck-value" id="compareWake">—</div><div class="ck-note" id="compareWakeNote">—</div></div>
+            <div class="compare-kpi"><div class="ck-label">与个人目标</div><div class="ck-value" id="compareGoal">—</div><div class="ck-note" id="compareGoalNote">—</div></div>
+          </div>
+          <div class="compare-reasons" id="compareReasons">记录更多睡眠后，这里会自动判断最新一晚相较近期基线是更好、基本持平还是更差。</div>
         </section>
 
         <section class="charts">
@@ -197,9 +215,7 @@
                   <div class="compare-row"><span>平均时长</span><b id="weekendDuration">—</b></div>
                 </div>
               </div>
-              <div class="analysis-note">
-                “社会时差”这里采用工作日与周末睡眠中点差的简化算法，仅适合自我观察。若工作日/周末记录数量很少，结果会比较不稳定。
-              </div>
+              <div class="analysis-note">“社会时差”这里采用工作日与周末睡眠中点差的简化算法，仅适合自我观察。若工作日/周末记录数量很少，结果会比较不稳定。</div>
             </div>
           </div>
         </section>
@@ -216,6 +232,7 @@
   </div>
 
   <div class="toast" id="toast"></div>
-  <script src="./app.js"></script>
+  <script src="./app.js?v=20261010-2155"></script>
+  <script src="./comparison.js?v=20261010-2155"></script>
 </body>
 </html>
