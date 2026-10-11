@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#f6f7fb">
   <title>睡眠规律记录</title>
-  <link rel="stylesheet" href="./styles.css?v=20261011-0826">
-  <link rel="stylesheet" href="./analytics.css?v=20261011-0826">
-  <link rel="stylesheet" href="./comparison.css?v=20261011-0826">
-  <link rel="stylesheet" href="./history-pagination.css?v=20261011-0826">
-  <link rel="stylesheet" href="./improvement.css?v=20261011-0826">
+  <link rel="stylesheet" href="./styles.css?v=20261011-0840">
+  <link rel="stylesheet" href="./analytics.css?v=20261011-0840">
+  <link rel="stylesheet" href="./comparison.css?v=20261011-0840">
+  <link rel="stylesheet" href="./history-pagination.css?v=20261011-0840">
+  <link rel="stylesheet" href="./improvement.css?v=20261011-0840">
+  <link rel="stylesheet" href="./time-controls.css?v=20261011-0840">
 </head>
 <body>
   <div class="page">
@@ -27,8 +28,16 @@
         <form id="sleepForm">
           <div class="field"><label for="date">本次睡眠归属日（起床日）</label><input id="date" type="date" required></div>
           <div class="two-col">
-            <div class="field"><label for="bed">入睡时间</label><input id="bed" type="time" value="00:00" required></div>
-            <div class="field"><label for="wake">起床时间</label><input id="wake" type="time" value="08:00" required></div>
+            <div class="field">
+              <label>入睡时间</label>
+              <input id="bed" type="hidden" value="00:00">
+              <div id="bedPicker"></div>
+            </div>
+            <div class="field">
+              <label>起床时间</label>
+              <input id="wake" type="hidden" value="08:00">
+              <div id="wakePicker"></div>
+            </div>
           </div>
           <div class="duration-box" id="durationPreview">预计睡眠：8小时00分</div>
           <div class="field"><label for="note">备注（可选）</label><textarea id="note" placeholder="例如：睡前刷手机、喝咖啡、午睡较久、夜里醒过……"></textarea></div>
@@ -99,9 +108,10 @@
   </div>
 
   <div class="toast" id="toast"></div>
-  <script src="./app.js?v=20261011-0826"></script>
-  <script src="./comparison.js?v=20261011-0826"></script>
-  <script src="./improvement.js?v=20261011-0826"></script>
-  <script src="./history-pagination.js?v=20261011-0826"></script>
+  <script src="./app.js?v=20261011-0840"></script>
+  <script src="./time-controls.js?v=20261011-0840"></script>
+  <script src="./comparison.js?v=20261011-0840"></script>
+  <script src="./improvement.js?v=20261011-0840"></script>
+  <script src="./history-pagination.js?v=20261011-0840"></script>
 </body>
 </html>
