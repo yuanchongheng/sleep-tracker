@@ -2,74 +2,92 @@
   const $=id=>document.getElementById(id);
   const pad=n=>String(n).padStart(2,'0');
 
-  function parseTime(raw){
-    const s=String(raw||'').trim().replace(/：/g,':');
-    if(!s)return null;
-    let h,m;
-    if(/^\d{1,2}:\d{1,2}$/.test(s)){
-      [h,m]=s.split(':').map(Number);
-    }else if(/^\d{3,4}$/.test(s)){
-      const digits=s.padStart(4,'0');
-      h=Number(digits.slice(0,2));m=Number(digits.slice(2));
-    }else if(/^\d{1,2}$/.test(s)){
-      h=Number(s);m=0;
-    }else return null;
-    if(!Number.isInteger(h)||!Number.isInteger(m)||h<0||h>23||m<0||m>59)return null;
-    return `${pad(h)}:${pad(m)}`;
+  function parseHidden(value){
+    const m=String(value||'00:00').match(/^(\d{1,2}):(\d{2})$/);
+    let h=m?Number(m[1]):0, min=m?Number(m[2]):0;
+    h=Math.min(23,Math.max(0,h));min=Math.min(59,Math.max(0,min));
+    return [pad(h),pad(min)];
   }
 
   function build(id,pickerId){
     const hidden=$(id),host=$(pickerId);
     if(!hidden||!host)return null;
     const label=id==='bed'?'入睡':'起床';
-    const hours=Array.from({length:24},(_,i)=>`<option value="${pad(i)}">${pad(i)}</option>`).join('');
-    const minutes=Array.from({length:60},(_,i)=>`<option value="${pad(i)}">${pad(i)}</option>`).join('');
+
     host.innerHTML=`
-      <div class="time-direct-wrap">
-        <input class="time-direct" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="5" aria-label="${label}时间" placeholder="HH:MM">
-      </div>
-      <div class="time-or">或下拉选择</div>
-      <div class="time-select">
-        <select class="time-hour" aria-label="${label}小时">${hours}</select>
-        <span class="time-colon">:</span>
-        <select class="time-minute" aria-label="${label}分钟">${minutes}</select>
-      </div>
-      <div class="time-caption"><span>小时</span><span>:</span><span>分钟</span></div>`;
+      <div class="time-segmented" role="group" aria-label="${label}时间">
+        <input class="time-part time-hour-part" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" aria-label="${label}小时">
+        <span class="time-separator">:</span>
+        <input class="time-part time-minute-part" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" aria-label="${label}分钟">
+        <span class="time-clock" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.25"></circle><path d="M12 7.5v5l3.2 2"></path></svg>
+        </span>
+      </div>`;
 
-    const direct=host.querySelector('.time-direct');
-    const h=host.querySelector('.time-hour');
-    const m=host.querySelector('.time-minute');
+    const hour=host.querySelector('.time-hour-part');
+    const minute=host.querySelector('.time-minute-part');
+    const wrap=host.querySelector('.time-segmented');
+    let syncing=false;
 
-    function setAll(value,{emit=false}={}){
-      const parsed=parseTime(value)||'00:00';
-      const [hh,mm]=parsed.split(':');
-      hidden.value=parsed;direct.value=parsed;h.value=hh;m.value=mm;
-      direct.classList.remove('invalid');
-      if(emit){
-        hidden.dispatchEvent(new Event('input',{bubbles:true}));
-        hidden.dispatchEvent(new Event('change',{bubbles:true}));
+    function emit(){
+      hidden.dispatchEvent(new Event('input',{bubbles:true}));
+      hidden.dispatchEvent(new Event('change',{bubbles:true}));
+    }
+    function updateHidden(){
+      const h=Number(hour.value),m=Number(minute.value);
+      if(hour.value.length===2&&minute.value.length===2&&h>=0&&h<=23&&m>=0&&m<=59){
+        hidden.value=`${pad(h)}:${pad(m)}`;
+        wrap.classList.remove('invalid');
+        emit();
       }
     }
-
-    function fromHidden(){setAll(hidden.value||'00:00')}
-    function fromSelect(){setAll(`${h.value}:${m.value}`,{emit:true})}
-    function commitDirect(){
-      const parsed=parseTime(direct.value);
-      if(!parsed){direct.classList.add('invalid');return false}
-      setAll(parsed,{emit:true});return true;
+    function fromHidden(){
+      syncing=true;
+      const [h,m]=parseHidden(hidden.value);
+      hour.value=h;minute.value=m;wrap.classList.remove('invalid');
+      syncing=false;
+    }
+    function selectPart(el){requestAnimationFrame(()=>el.select())}
+    function normalizePart(el,max){
+      if(!el.value){fromHidden();return}
+      let n=Number(el.value);
+      if(!Number.isFinite(n))n=0;
+      n=Math.min(max,Math.max(0,n));
+      el.value=pad(n);updateHidden();
     }
 
-    h.addEventListener('change',fromSelect);
-    m.addEventListener('change',fromSelect);
-    direct.addEventListener('input',()=>direct.classList.remove('invalid'));
-    direct.addEventListener('blur',()=>{
-      if(!commitDirect())setTimeout(()=>{direct.value=hidden.value;direct.classList.remove('invalid')},600);
-    });
-    direct.addEventListener('keydown',e=>{
-      if(e.key==='Enter'){
-        e.preventDefault();
-        if(commitDirect())direct.blur();
-      }
+    [hour,minute].forEach(el=>{
+      el.addEventListener('focus',()=>{wrap.classList.add('focused');selectPart(el)});
+      el.addEventListener('click',()=>selectPart(el));
+      el.addEventListener('blur',()=>{
+        normalizePart(el,el===hour?23:59);
+        setTimeout(()=>{if(!wrap.contains(document.activeElement))wrap.classList.remove('focused')},0);
+      });
+      el.addEventListener('keydown',e=>{
+        const max=el===hour?23:59;
+        if(e.key==='ArrowUp'||e.key==='ArrowDown'){
+          e.preventDefault();
+          let n=Number(el.value);if(!Number.isFinite(n))n=0;
+          n=e.key==='ArrowUp'?(n>=max?0:n+1):(n<=0?max:n-1);
+          el.value=pad(n);updateHidden();selectPart(el);return;
+        }
+        if((e.key===':'||e.key==='。'||e.key==='.')&&el===hour){e.preventDefault();minute.focus();selectPart(minute);return}
+        if(e.key==='ArrowRight'&&el===hour){e.preventDefault();minute.focus();selectPart(minute);return}
+        if(e.key==='ArrowLeft'&&el===minute){e.preventDefault();hour.focus();selectPart(hour);return}
+      });
+      el.addEventListener('input',()=>{
+        if(syncing)return;
+        const digits=el.value.replace(/\D/g,'').slice(-2);
+        el.value=digits;
+        const max=el===hour?23:59;
+        if(digits.length===2){
+          const n=Number(digits);
+          if(n<=max){
+            el.value=pad(n);updateHidden();
+            if(el===hour){minute.focus();selectPart(minute)}
+          }else wrap.classList.add('invalid');
+        }else wrap.classList.remove('invalid');
+      });
     });
 
     fromHidden();
